@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Portal</title>
+    <title>LearnFlow - Learn at Your Pace</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -15,162 +15,259 @@
         <span id="motivationText"></span>
     </div>
 
-    <nav class="navbar" style="display:none;">
-        <div class="nav-container">
-            <div class="nav-logo">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-book-open"></i>
+            <span>LearnFlow</span>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" onclick="showDashboard()">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showCourses()">
+                <i class="fas fa-book"></i>
+                <span>Courses</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showMyCourses()">
                 <i class="fas fa-graduation-cap"></i>
-                <span>CoursePortal</span>
-            </div>
-            <div class="nav-menu" id="nav-menu">
-                <a href="#" class="nav-link" onclick="showDashboard()">Dashboard</a>
-                <a href="#" class="nav-link" onclick="showCourses()">Courses</a>
-                <a href="#" class="nav-link" onclick="showMyCourses()">My Courses</a>
-                <a href="#" class="nav-link" onclick="showProfile()">Profile</a>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-            <button class="nav-toggle" id="mobile-menu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
+                <span>My Learning</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showProfile()">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
             </button>
         </div>
-    </nav>
+    </aside>
 
-    <div class="container">
-        <div class="loader" id="loader"></div>
-        <div class="message" id="message"></div>
-
-        <!-- Auth -->
-        <div id="auth-container">
-            <div class="auth-form" id="login-form">
-                <div class="auth-card">
-                    <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
-                    <form id="loginForm">
-                        <div class="input-group">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="loginEmail" placeholder="Email" required autocomplete="email">
-                        </div>
-                        <div class="input-group">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
-                        </div>
-                        <button type="submit" class="btn-primary">
-                            <span class="btn-text">Login</span>
-                            <div class="btn-loader"></div>
-                        </button>
-                        <p class="auth-switch">Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
-                    </form>
-                </div>
-            </div>
-
-            <div class="auth-form hidden" id="signup-form">
-                <div class="auth-card">
-                    <h2><i class="fas fa-user-plus"></i> Create Account</h2>
-                    <form id="signupForm">
-                        <div class="input-group">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="signupName" placeholder="Full Name" required autocomplete="name">
-                        </div>
-                        <div class="input-group">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="signupEmail" placeholder="Email" required autocomplete="email">
-                        </div>
-                        <div class="input-group">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="signupPassword" placeholder="Password (min 8 chars)" required minlength="8" autocomplete="new-password">
-                        </div>
-                        <button type="submit" class="btn-primary">
-                            <span class="btn-text">Sign Up</span>
-                            <div class="btn-loader"></div>
-                        </button>
-                        <p class="auth-switch">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dashboard -->
-        <div id="dashboard" class="page-content hidden">
-            <header class="page-header">
-                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
-                <p>Welcome back to your learning journey!</p>
-            </header>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <i class="fas fa-book"></i>
-                    <div><h3 id="totalCourses">0</h3><p>Total Courses</p></div>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-check-circle"></i>
-                    <div><h3 id="myCoursesCount">0</h3><p>My Courses</p></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- All Courses -->
-        <div id="courses" class="page-content hidden">
-            <header class="page-header">
-                <h1><i class="fas fa-book-open"></i> All Courses</h1>
-                <span class="enroll-hint" id="enrollHint">Loading enrollment status...</span>
-            </header>
-            <div class="courses-grid" id="coursesGrid"></div>
-        </div>
-
-        <!-- My Courses -->
-        <div id="my-courses" class="page-content hidden">
-            <header class="page-header">
-                <h1><i class="fas fa-heart"></i> My Courses</h1>
-                <p>Click on a course to view topics</p>
-            </header>
-            <div class="courses-grid" id="myCoursesGrid"></div>
-        </div>
-
-        <!-- Course Topics Page -->
-        <div id="course-topics" class="page-content hidden">
-            <header class="page-header">
-                <button class="back-btn" onclick="showMyCourses()">
-                    <i class="fas fa-arrow-left"></i> Back to My Courses
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-bar" id="topbar">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <h1><i class="fas fa-play-circle"></i> <span id="courseTopicTitle">Course</span></h1>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-track">
-                        <div class="progress-bar-fill fill-blue" id="progressFill"></div>
-                    </div>
-                    <span class="progress-text" id="progressText">0% Complete</span>
+            </div>
+            <div class="header-right">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search courses...">
                 </div>
-            </header>
-            <div class="topics-list" id="topicsList"></div>
-        </div>
+                <div class="user-profile">
+                    <div class="avatar">A</div>
+                    <div class="user-info">
+                        <p class="user-name" id="headerUserName">User</p>
+                        <p class="user-email" id="headerUserEmail">user@email.com</p>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        <!-- Profile -->
-        <div id="profile" class="page-content hidden">
-            <header class="page-header">
-                <h1><i class="fas fa-user-circle"></i> Profile</h1>
-            </header>
-            <div class="profile-container">
-                <div class="profile-card">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user"></i>
+        <div class="content-wrapper">
+            <!-- Loader & Messages -->
+            <div class="loader" id="loader"></div>
+            <div class="message" id="message"></div>
+
+            <!-- Auth Pages -->
+            <div id="auth-container">
+                <!-- Login Form -->
+                <div class="auth-form" id="login-form">
+                    <div class="auth-card">
+                        <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
+                        <form id="loginForm">
+                            <div class="input-group">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="loginEmail" placeholder="Email" required autocomplete="email">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
+                            </div>
+                            <button type="submit" class="btn-primary">
+                                <span class="btn-text">Login</span>
+                                <div class="btn-loader"></div>
+                            </button>
+                            <p class="auth-switch">Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+                        </form>
                     </div>
-                    <div class="profile-info">
-                        <h3 id="profileName">Loading...</h3>
-                        <p id="profileEmail">Loading...</p>
+                </div>
+
+                <!-- Signup Form -->
+                <div class="auth-form hidden" id="signup-form">
+                    <div class="auth-card">
+                        <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+                        <form id="signupForm">
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="signupName" placeholder="Full Name" required autocomplete="name">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="signupEmail" placeholder="Email" required autocomplete="email">
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="signupPassword" placeholder="Password (min 8 chars)" required minlength="8" autocomplete="new-password">
+                            </div>
+                            <button type="submit" class="btn-primary">
+                                <span class="btn-text">Sign Up</span>
+                                <div class="btn-loader"></div>
+                            </button>
+                            <p class="auth-switch">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+                        </form>
                     </div>
-                    <div class="profile-actions">
-                        <button class="btn-outline" onclick="editProfile()">
-                            <i class="fas fa-edit"></i> Edit Profile
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page-content hidden">
+                <!-- Continue Where You Left Off -->
+                <div class="continue-section" id="continueSection" style="display: none;">
+                    <div class="continue-card">
+                        <div class="continue-icon">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <div class="continue-content">
+                            <p class="continue-label">CONTINUE WHERE YOU LEFT OFF</p>
+                            <h3 id="continueCourseTitle">Course Name</h3>
+                            <div class="continue-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="continueProgressFill"></div>
+                                </div>
+                                <span id="continueProgressText">0% • 0 topics done</span>
+                            </div>
+                        </div>
+                        <button class="btn-resume" onclick="resumeCourse()">
+                            <i class="fas fa-play"></i> Resume
                         </button>
-                        <button class="btn-danger" onclick="deleteAccount()">
-                            <i class="fas fa-trash-alt"></i> Delete Account
-                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Cards -->
+                <div class="status-section">
+                    <h2>Status</h2>
+                    <div class="status-grid">
+                        <div class="status-card orange">
+                            <div class="status-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="status-info">
+                                <p class="status-number" id="topicsDoneCount">0</p>
+                                <p class="status-label">Topics Done</p>
+                                <p class="status-detail" id="topicsDetail">of 0 total</p>
+                            </div>
+                        </div>
+
+                        <div class="status-card pink">
+                            <div class="status-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="status-info">
+                                <p class="status-number" id="enrolledCount">0</p>
+                                <p class="status-label">Enrolled</p>
+                                <p class="status-detail">active courses</p>
+                            </div>
+                        </div>
+
+                        <div class="status-card green">
+                            <div class="status-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="status-info">
+                                <p class="status-number" id="completedCount">0</p>
+                                <p class="status-label">Completed</p>
+                                <p class="status-detail">70%+ progress</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Courses Section -->
+                <div class="my-courses-section">
+                    <div class="section-header">
+                        <h2>My Courses</h2>
+                        <div class="tabs">
+                            <button class="tab active" onclick="filterCourses('active')">Active</button>
+                            <button class="tab" onclick="filterCourses('completed')">Completed</button>
+                        </div>
+                    </div>
+                    <div class="courses-table" id="coursesTableContainer">
+                        <!-- Will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses Page -->
+            <div id="courses" class="page-content hidden">
+                <div class="page-header">
+                    <h1><i class="fas fa-book-open"></i> Explore Courses</h1>
+                    <span class="enroll-hint" id="enrollHint">Loading enrollment status...</span>
+                </div>
+                <div class="courses-grid" id="coursesGrid"></div>
+            </div>
+
+            <!-- My Courses Page -->
+            <div id="my-courses" class="page-content hidden">
+                <div class="page-header">
+                    <h1><i class="fas fa-graduation-cap"></i> My Learning</h1>
+                    <p>Continue your learning journey</p>
+                </div>
+                <div class="courses-grid" id="myCoursesGrid"></div>
+            </div>
+
+            <!-- Course Topics Page -->
+            <div id="course-topics" class="page-content hidden">
+                <div class="page-header">
+                    <button class="back-btn" onclick="showMyCourses()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <h1><i class="fas fa-play-circle"></i> <span id="courseTopicTitle">Course</span></h1>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">0% Complete</span>
+                    </div>
+                </div>
+                <div class="topics-list" id="topicsList"></div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profile" class="page-content hidden">
+                <div class="page-header">
+                    <h1><i class="fas fa-user-circle"></i> Profile</h1>
+                </div>
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h3 id="profileName">Loading...</h3>
+                            <p id="profileEmail">Loading...</p>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn-outline" onclick="editProfile()">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </button>
+                            <button class="btn-danger" onclick="deleteAccount()">
+                                <i class="fas fa-trash-alt"></i> Delete Account
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-    </div>
+    </main>
 
     <script src="script.js"></script>
 </body>
