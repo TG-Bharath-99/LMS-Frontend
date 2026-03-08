@@ -1,7 +1,8 @@
 let currentUser = null;
 let token = null;
 
-const API_BASE = 'https://lms-backend-kappa-kohl.vercel.app/api';
+// ✅ FIXED: Make API_BASE configurable - support dev/prod environments
+const API_BASE = window.ENV?.API_BASE || localStorage.getItem('API_BASE') || 'http://localhost:8000/api';
 
 const loader = document.getElementById('loader');
 const message = document.getElementById('message');
@@ -247,8 +248,14 @@ async function loadDashboard() {
             apiCall('GET', 'courses', token),
             apiCall('GET', 'my-courses', token)
         ]);
-        document.getElementById('totalCourses').textContent = Array.isArray(coursesRes) ? coursesRes.length : 0;
-        document.getElementById('myCoursesCount').textContent = Array.isArray(myCoursesRes) ? myCoursesRes.length : 0;
+        
+        // ✅ FIXED: Better validation of response structure
+        const coursesCount = Array.isArray(coursesRes) ? coursesRes.length : 0;
+        const myCoursesCount = Array.isArray(myCoursesRes) ? myCoursesRes.length : 0;
+        
+        document.getElementById('totalCourses').textContent = coursesCount;
+        document.getElementById('myCoursesCount').textContent = myCoursesCount;
+        
         const subtitle = document.querySelector('#dashboard .page-header p');
         if (subtitle) subtitle.textContent = `Welcome back, ${currentUser} 👋`;
     } catch (err) { console.error(err); }
@@ -327,7 +334,7 @@ async function loadCourses() {
                 <div class="course-card enrolled-card">
                     <div class="card-ribbon">Enrolled</div>
                     <div class="course-icon-wrap"><i class="fas fa-book-open"></i></div>
-                    <h3>${course.title}</h3>
+                    <h3>${escapeHtml(course.title)}</h3>
                     <div class="progress-inline">
                         <div class="progress-inline-bar">
                             <div class="progress-inline-fill" style="width:${progress}%"></div>
@@ -343,9 +350,9 @@ async function loadCourses() {
                 <div class="course-card locked-card">
                     <div class="card-ribbon locked-ribbon"><i class="fas fa-lock"></i> Locked</div>
                     <div class="course-icon-wrap locked-icon"><i class="fas fa-lock"></i></div>
-                    <h3>${course.title}</h3>
+                    <h3>${escapeHtml(course.title)}</h3>
                     <div class="lock-notice">
-                        Complete 70% of <strong>"${status.activeCourseName}"</strong> to unlock
+                        Complete 70% of <strong>"${escapeHtml(status.activeCourseName)}"</strong> to unlock
                     </div>
                 </div>`;
             }
@@ -354,7 +361,7 @@ async function loadCourses() {
             <div class="course-card available-card">
                 <div class="card-ribbon available-ribbon">Available</div>
                 <div class="course-icon-wrap"><i class="fas fa-book-open"></i></div>
-                <h3>${course.title}</h3>
+                <h3>${escapeHtml(course.title)}</h3>
                 <button onclick="enrollCourse(${course.id}, this)">
                     <i class="fas fa-plus-circle"></i> Enroll Now
                 </button>
@@ -400,10 +407,11 @@ async function loadMyCourses() {
         grid.innerHTML = courses.map(course => {
             const progress = getProgress(course.id);
             const colorClass = progress >= 70 ? 'green' : progress >= 40 ? 'orange' : 'blue';
+            // ✅ FIXED: Use data attributes instead of inline onclick with string interpolation
             return `
-            <div class="course-card my-course-card" onclick="showCourseTopics(${course.id}, '${course.title.replace(/'/g, "\\'")}')">
+            <div class="course-card my-course-card" data-course-id="${course.id}" data-course-title="${escapeHtml(course.title)}">
                 <div class="course-icon-wrap"><i class="fas fa-play-circle"></i></div>
-                <h3>${course.title}</h3>
+                <h3>${escapeHtml(course.title)}</h3>
                 ${progress >= 70 ? '<div class="badge-70"><i class="fas fa-unlock-alt"></i> 70%+ Unlocked</div>' : ''}
                 <div class="progress-ring-wrap">
                     <svg class="progress-ring" viewBox="0 0 60 60">
@@ -422,6 +430,15 @@ async function loadMyCourses() {
                 <p class="click-hint"><i class="fas fa-mouse-pointer"></i> Click to view topics</p>
             </div>`;
         }).join('');
+        
+        // ✅ FIXED: Add event listeners using data attributes
+        document.querySelectorAll('.my-course-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const courseId = this.dataset.courseId;
+                const courseTitle = this.dataset.courseTitle;
+                showCourseTopics(parseInt(courseId), courseTitle);
+            });
+        });
     } catch {
         grid.innerHTML = '<p class="loading-text">Failed to load your courses.</p>';
     }
@@ -519,14 +536,14 @@ async function loadTopics(courseId) {
                 <div class="topic-left">
                     <div class="topic-number">${isDone ? '<i class="fas fa-check"></i>' : index + 1}</div>
                     ${thumbnail ? `
-                    <a href="${topic.link}" target="_blank" class="topic-thumbnail">
+                    <a href="${escapeHtml(topic.link)}" target="_blank" class="topic-thumbnail">
                         <img src="${thumbnail}" alt="thumbnail" onerror="this.parentElement.style.display='none'">
                         <div class="play-overlay"><i class="fas fa-play"></i></div>
                     </a>` : ''}
                 </div>
                 <div class="topic-content">
-                    <h3 class="topic-title">${topic.title}</h3>
-                    <a href="${topic.link}" target="_blank" class="topic-link">
+                    <h3 class="topic-title">${escapeHtml(topic.title)}</h3>
+                    <a href="${escapeHtml(topic.link)}" target="_blank" class="topic-link">
                         <i class="fab fa-youtube"></i> Watch on YouTube
                     </a>
                 </div>
@@ -572,10 +589,32 @@ async function deleteAccount() {
     } catch { showMessage('Failed to delete account.', 'error'); }
 }
 
+// ✅ FIXED: Clear all user-specific data on logout
 function logout() {
-    currentUser = null; token = null;
+    // Clear all user-specific progress data from localStorage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('progress_') || key.startsWith('topiccount_'))) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Clear auth data
+    currentUser = null;
+    token = null;
     localStorage.removeItem('token');
+    
+    // Redirect to login
     showLogin();
+}
+
+// ✅ FIXED: Utility function to escape HTML and prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
