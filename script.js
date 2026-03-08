@@ -21,7 +21,25 @@ const motivationMessages = [
     "💡 Knowledge unlocked! You're on fire!",
     "🎉 Well done! Consistency is the key to success!",
     "🦁 Unstoppable! Nothing can slow you down now!",
-    "⚡ Brilliant! Your future self will thank you!"
+    "⚡ Brilliant! Your future self will thank you!",
+    "📈 Progress detected! Keep climbing higher!",
+    "🧠 Smart work! Your skills are leveling up!",
+    "🔥 Another win! Keep stacking those victories!",
+    "🚀 Speed and focus! You're moving fast!",
+    "🎯 Right on target! Stay locked in!",
+    "💎 Discipline is paying off! Keep shining!",
+    "🏅 Another milestone unlocked!",
+    "⚔️ Stay sharp! You're getting stronger!",
+    "🌱 Growth mode activated!",
+    "🧩 Piece by piece you're mastering it!",
+    "📚 Knowledge is power — keep learning!",
+    "🔑 One more key to success unlocked!",
+    "🏹 Focus like an arrow — straight to the goal!",
+    "🌄 Step by step you're reaching the summit!",
+    "⚡ Momentum building! Don't stop now!",
+    "🔥 Another topic conquered!",
+    "🎯 Precision and dedication — perfect combo!",
+    "🏆 Keep pushing! Winners never stop!"
 ];
 
 function getRandomMotivation() {
