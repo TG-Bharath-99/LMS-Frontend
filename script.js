@@ -1,8 +1,10 @@
 let currentUser = null;
 let token = null;
 
-// ✅ FIXED: Make API_BASE configurable - support dev/prod environments
-const API_BASE = window.ENV?.API_BASE || localStorage.getItem('API_BASE') || 'http://localhost:8000/api';
+// ✅ FIXED FOR DEPLOYMENT: Use Vercel backend URL for production
+// Netlify frontend: https://lms-learnhub.netlify.app
+// Vercel backend: https://lms-backend-kappa-kohl.vercel.app
+const API_BASE = 'https://lms-backend-kappa-kohl.vercel.app/api';
 
 const loader = document.getElementById('loader');
 const message = document.getElementById('message');
@@ -249,7 +251,6 @@ async function loadDashboard() {
             apiCall('GET', 'my-courses', token)
         ]);
         
-        // ✅ FIXED: Better validation of response structure
         const coursesCount = Array.isArray(coursesRes) ? coursesRes.length : 0;
         const myCoursesCount = Array.isArray(myCoursesRes) ? myCoursesRes.length : 0;
         
@@ -262,24 +263,17 @@ async function loadDashboard() {
 }
 
 // ─── ENROLLMENT LOGIC ─────────────────────────────────────────────
-// ✅ Rule: User can only enroll in ONE new course at a time.
-//    To enroll in another, they must complete 70% of their CURRENT active course.
-//    "Active course" = the most recently enrolled course that is NOT yet 70% done.
-
 function getEnrollmentStatus(enrolledCourses) {
     if (!enrolledCourses || enrolledCourses.length === 0) {
-        // No enrollments yet — can freely enroll in first course
         return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
     }
 
-    // Find any course that is NOT yet 70% complete — that is the "active" course
     const activeCourse = enrolledCourses.find(course => {
         const progress = getProgress(course.id);
         return progress < 70;
     });
 
     if (activeCourse) {
-        // There's an active course below 70% — cannot enroll in anything new
         const progress = getProgress(activeCourse.id);
         return {
             canEnrollNew: false,
@@ -289,7 +283,6 @@ function getEnrollmentStatus(enrolledCourses) {
         };
     }
 
-    // All enrolled courses are 70%+ complete — can enroll in one more
     return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
 }
 
@@ -312,7 +305,6 @@ async function loadCourses() {
         const enrolledIds = Array.isArray(myCourses) ? myCourses.map(c => c.id) : [];
         const status = getEnrollmentStatus(Array.isArray(myCourses) ? myCourses : []);
 
-        // Update header hint
         const hint = document.getElementById('enrollHint');
         if (hint) {
             if (!status.canEnrollNew && status.activeCourseId) {
@@ -407,7 +399,6 @@ async function loadMyCourses() {
         grid.innerHTML = courses.map(course => {
             const progress = getProgress(course.id);
             const colorClass = progress >= 70 ? 'green' : progress >= 40 ? 'orange' : 'blue';
-            // ✅ FIXED: Use data attributes instead of inline onclick with string interpolation
             return `
             <div class="course-card my-course-card" data-course-id="${course.id}" data-course-title="${escapeHtml(course.title)}">
                 <div class="course-icon-wrap"><i class="fas fa-play-circle"></i></div>
@@ -431,7 +422,6 @@ async function loadMyCourses() {
             </div>`;
         }).join('');
         
-        // ✅ FIXED: Add event listeners using data attributes
         document.querySelectorAll('.my-course-card').forEach(card => {
             card.addEventListener('click', function() {
                 const courseId = this.dataset.courseId;
@@ -477,7 +467,7 @@ function updateProgressUI(courseId, completedCount, totalCount) {
 
 // ─── Topics ───────────────────────────────────────────────────────
 function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
-    if (!checkbox.checked) { checkbox.checked = true; return; } // cannot uncheck
+    if (!checkbox.checked) { checkbox.checked = true; return; }
 
     const completed = getCompletedTopics(courseId);
     if (completed.includes(topicId)) return;
@@ -589,9 +579,7 @@ async function deleteAccount() {
     } catch { showMessage('Failed to delete account.', 'error'); }
 }
 
-// ✅ FIXED: Clear all user-specific data on logout
 function logout() {
-    // Clear all user-specific progress data from localStorage
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -601,16 +589,13 @@ function logout() {
     }
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
-    // Clear auth data
     currentUser = null;
     token = null;
     localStorage.removeItem('token');
     
-    // Redirect to login
     showLogin();
 }
 
-// ✅ FIXED: Utility function to escape HTML and prevent XSS
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
