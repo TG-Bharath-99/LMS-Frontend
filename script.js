@@ -230,7 +230,6 @@ function initEventListeners() {
         }
     });
 
-    // Contact Form - Send Email
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -251,10 +250,8 @@ function initEventListeners() {
                 const mailtoLink = `mailto:bharathummadi4@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
                     `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message_text}`
                 )}`;
-                
                 window.location.href = mailtoLink;
-                
-                showMessage('Opening your email client... Please send the email to complete your message.', 'success');
+                showMessage('Opening your email client...', 'success');
                 contactForm.reset();
             } catch (error) {
                 showMessage('Error opening email client. Please email directly: bharathummadi4@gmail.com', 'error');
@@ -271,7 +268,7 @@ function initEventListeners() {
     }
 }
 
-// Dashboard
+// ─── Dashboard ───────────────────────────────────────────────
 async function loadDashboard() {
     if (!token) return;
     try {
@@ -290,16 +287,29 @@ async function loadDashboard() {
         
         document.getElementById('totalCourses').textContent = courses.length;
         document.getElementById('myCoursesCount').textContent = myCourses.length;
-        
-        // Calculate progress
+
+        // ✅ FIX: Fetch topics for each enrolled course to get accurate counts
+        // then compute completed topics correctly
         let totalTopicsCompleted = 0;
-        for (const course of myCourses) {
+
+        await Promise.all(myCourses.map(async (course) => {
+            try {
+                // Only fetch if we don't have the topic count cached
+                if (!localStorage.getItem(`topiccount_${course.id}`)) {
+                    const data = await apiCall('GET', `courses/${course.id}/topics`, token);
+                    const topics = data.topics || [];
+                    localStorage.setItem(`topiccount_${course.id}`, topics.length);
+                }
+            } catch (e) {
+                // silently ignore per-course fetch errors
+            }
             const completed = getCompletedTopics(course.id);
             totalTopicsCompleted += completed.length;
-        }
+        }));
+
         document.getElementById('topicsCompleted').textContent = totalTopicsCompleted;
         
-        // Learning streak (days since last login)
+        // Learning streak
         const lastLogin = localStorage.getItem('lastLogin');
         const today = new Date().toDateString();
         let streak = parseInt(localStorage.getItem('learningStreak')) || 0;
@@ -311,7 +321,7 @@ async function loadDashboard() {
         }
         document.getElementById('learningStreak').textContent = streak;
         
-        // Load progress data
+        // ✅ FIX: Pass myCourses AFTER topic counts are populated
         loadDashboardProgress(myCourses);
         loadDashboardFeatured(courses, myCourses);
         
@@ -327,10 +337,11 @@ function loadDashboardProgress(myCourses) {
     }
     
     container.innerHTML = myCourses.map(course => {
+        // ✅ FIX: getProgress now works because topiccount is guaranteed to be set above
         const progress = getProgress(course.id);
         return `
             <div class="progress-item">
-                <p class="progress-item-name" title="${course.title}">${course.title}</p>
+                <p class="progress-item-name" title="${course.title}">${escapeHtml(course.title)}</p>
                 <div class="progress-item-bar">
                     <div class="progress-item-fill" style="width: ${progress}%"></div>
                 </div>
@@ -364,7 +375,7 @@ function loadDashboardFeatured(allCourses, enrolledCourses) {
     `).join('');
 }
 
-// Enrollment Logic
+// ─── Enrollment Logic ────────────────────────────────────────
 function getEnrollmentStatus(enrolledCourses) {
     if (!enrolledCourses || enrolledCourses.length === 0) {
         return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
@@ -388,7 +399,7 @@ function getEnrollmentStatus(enrolledCourses) {
     return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
 }
 
-// All Courses
+// ─── All Courses ─────────────────────────────────────────────
 async function loadCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('coursesGrid');
@@ -405,6 +416,18 @@ async function loadCourses() {
         }
 
         const enrolledIds = Array.isArray(myCourses) ? myCourses.map(c => c.id) : [];
+
+        // ✅ FIX: Ensure topic counts are cached before computing enrollment status
+        await Promise.all((Array.isArray(myCourses) ? myCourses : []).map(async (course) => {
+            if (!localStorage.getItem(`topiccount_${course.id}`)) {
+                try {
+                    const data = await apiCall('GET', `courses/${course.id}/topics`, token);
+                    const topics = data.topics || [];
+                    localStorage.setItem(`topiccount_${course.id}`, topics.length);
+                } catch (e) {}
+            }
+        }));
+
         const status = getEnrollmentStatus(Array.isArray(myCourses) ? myCourses : []);
 
         const hint = document.getElementById('enrollHint');
@@ -482,7 +505,7 @@ async function enrollCourse(courseId, btn) {
     }
 }
 
-// My Courses
+// ─── My Courses ──────────────────────────────────────────────
 async function loadMyCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('myCoursesGrid');
@@ -498,9 +521,20 @@ async function loadMyCourses() {
                 </div>`;
             return;
         }
+
+        // ✅ FIX: Ensure topic counts are cached before rendering progress rings
+        await Promise.all(courses.map(async (course) => {
+            if (!localStorage.getItem(`topiccount_${course.id}`)) {
+                try {
+                    const data = await apiCall('GET', `courses/${course.id}/topics`, token);
+                    const topics = data.topics || [];
+                    localStorage.setItem(`topiccount_${course.id}`, topics.length);
+                } catch (e) {}
+            }
+        }));
+
         grid.innerHTML = courses.map(course => {
             const progress = getProgress(course.id);
-            const colorClass = progress >= 70 ? 'green' : progress >= 40 ? 'orange' : 'blue';
             return `
             <div class="course-card my-course-card" onclick="showCourseTopics(${course.id}, '${course.title.replace(/'/g, "\\'")}')">
                 <div class="course-icon-wrap"><i class="fas fa-play-circle"></i></div>
@@ -528,7 +562,7 @@ async function loadMyCourses() {
     }
 }
 
-// Progress
+// ─── Progress Helpers ────────────────────────────────────────
 function getProgressKey(courseId) { return `progress_${currentUser}_${courseId}`; }
 
 function getCompletedTopics(courseId) {
@@ -559,7 +593,7 @@ function updateProgressUI(courseId, completedCount, totalCount) {
     }
 }
 
-// Topics
+// ─── Topics ──────────────────────────────────────────────────
 function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
     checkbox.checked = true;
 
@@ -568,6 +602,9 @@ function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
 
     completed.push(topicId);
     localStorage.setItem(getProgressKey(courseId), JSON.stringify(completed));
+
+    // ✅ FIX: Always keep topiccount in sync when marking complete
+    localStorage.setItem(`topiccount_${courseId}`, totalTopics);
 
     const card = document.getElementById(`topic-card-${topicId}`);
     if (card) {
@@ -597,7 +634,9 @@ async function loadTopics(courseId) {
         const data = await apiCall('GET', `courses/${courseId}/topics`, token);
         const topics = data.topics || [];
 
+        // ✅ FIX: Always update topiccount when topics are loaded
         localStorage.setItem(`topiccount_${courseId}`, topics.length);
+
         const completed = getCompletedTopics(courseId);
         updateProgressUI(courseId, completed.length, topics.length);
 
@@ -653,7 +692,7 @@ function extractYoutubeId(url) {
     return match ? match[1] : null;
 }
 
-// Profile
+// ─── Profile ─────────────────────────────────────────────────
 async function loadProfile() {
     if (!token || !currentUser) return showLogin();
     try {
