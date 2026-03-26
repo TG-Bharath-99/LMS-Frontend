@@ -8,7 +8,6 @@ const message = document.getElementById('message');
 const authContainer = document.getElementById('auth-container');
 const navbar = document.querySelector('.navbar');
 
-// Motivation Messages
 const motivationMessages = [
     "🔥 Great job! Keep that momentum going!",
     "⭐ One step closer to mastery!",
@@ -26,16 +25,13 @@ function getRandomMotivation() {
     return motivationMessages[Math.floor(Math.random() * motivationMessages.length)];
 }
 
-// Mobile Menu
 function toggleMobileMenu() {
     document.getElementById('nav-menu').classList.toggle('active');
 }
 
-// Loader
 function showLoader() { loader.style.display = 'block'; }
 function hideLoader() { loader.style.display = 'none'; }
 
-// Messages
 function showMessage(text, type = 'success') {
     message.textContent = text;
     message.className = `message ${type}`;
@@ -43,7 +39,6 @@ function showMessage(text, type = 'success') {
     setTimeout(() => { message.style.display = 'none'; }, 5000);
 }
 
-// Motivation Toast
 function showMotivationToast(text) {
     const toast = document.getElementById('motivationToast');
     const toastText = document.getElementById('motivationText');
@@ -52,28 +47,21 @@ function showMotivationToast(text) {
     setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
-// URL Builder
 function buildUrl(endpoint) {
     const base = API_BASE.replace(/\/+$/, '');
     const path = endpoint.replace(/^\/+/, '');
     return `${base}/${path}`;
 }
 
-// API Call
 async function apiCall(method, endpoint, authToken = null, data = null) {
     showLoader();
     try {
-        const config = {
-            method,
-            headers: { 'Content-Type': 'application/json' }
-        };
+        const config = { method, headers: { 'Content-Type': 'application/json' } };
         if (authToken) config.headers['Authorization'] = `Bearer ${authToken}`;
         if (data) config.body = JSON.stringify(data);
-
         const url = buildUrl(endpoint);
         const response = await fetch(url, config);
         const text = await response.text();
-
         let result = {};
         if (text) {
             try { result = JSON.parse(text); }
@@ -89,71 +77,24 @@ async function apiCall(method, endpoint, authToken = null, data = null) {
     }
 }
 
-// Page Routing
+// ─── Page Routing ─────────────────────────────────────────────
 function hideAll() {
     document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.auth-form').forEach(el => el.classList.add('hidden'));
     document.getElementById('nav-menu').classList.remove('active');
 }
+function setNavbarVisible(visible) { navbar.style.display = visible ? 'block' : 'none'; }
+function showLogin() { hideAll(); setNavbarVisible(false); authContainer.classList.remove('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
+function showSignup() { hideAll(); setNavbarVisible(false); authContainer.classList.remove('hidden'); document.getElementById('signup-form').classList.remove('hidden'); }
+function showDashboard() { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('dashboard').classList.remove('hidden'); loadDashboard(); }
+function showCourses() { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('courses').classList.remove('hidden'); loadCourses(); }
+function showMyCourses() { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('my-courses').classList.remove('hidden'); loadMyCourses(); }
+function showProfile() { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('profile').classList.remove('hidden'); loadProfile(); }
+function showAbout() { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('about').classList.remove('hidden'); }
+function showContact() { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('contact').classList.remove('hidden'); }
+function showCourseTopics(courseId, courseTitle) { hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true); document.getElementById('course-topics').classList.remove('hidden'); document.getElementById('courseTopicTitle').textContent = courseTitle; loadTopics(courseId); }
 
-function setNavbarVisible(visible) {
-    navbar.style.display = visible ? 'block' : 'none';
-}
-
-function showLogin() {
-    hideAll(); setNavbarVisible(false);
-    authContainer.classList.remove('hidden');
-    document.getElementById('login-form').classList.remove('hidden');
-}
-
-function showSignup() {
-    hideAll(); setNavbarVisible(false);
-    authContainer.classList.remove('hidden');
-    document.getElementById('signup-form').classList.remove('hidden');
-}
-
-function showDashboard() {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('dashboard').classList.remove('hidden');
-    loadDashboard();
-}
-
-function showCourses() {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('courses').classList.remove('hidden');
-    loadCourses();
-}
-
-function showMyCourses() {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('my-courses').classList.remove('hidden');
-    loadMyCourses();
-}
-
-function showProfile() {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('profile').classList.remove('hidden');
-    loadProfile();
-}
-
-function showAbout() {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('about').classList.remove('hidden');
-}
-
-function showContact() {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('contact').classList.remove('hidden');
-}
-
-function showCourseTopics(courseId, courseTitle) {
-    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
-    document.getElementById('course-topics').classList.remove('hidden');
-    document.getElementById('courseTopicTitle').textContent = courseTitle;
-    loadTopics(courseId);
-}
-
-// Auth
+// ─── Auth ─────────────────────────────────────────────────────
 async function checkAuthStatus() {
     token = localStorage.getItem('token');
     if (token) {
@@ -176,11 +117,8 @@ function initEventListeners() {
     const signupForm = document.getElementById('signupForm');
     const contactForm = document.getElementById('contactForm');
     const mobileMenu = document.getElementById('mobile-menu');
-    
-    if (!loginForm || !signupForm) {
-        setTimeout(initEventListeners, 100); 
-        return;
-    }
+
+    if (!loginForm || !signupForm) { setTimeout(initEventListeners, 100); return; }
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -207,10 +145,7 @@ function initEventListeners() {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const password = document.getElementById('signupPassword').value;
-        if (password.length < 8) { 
-            showMessage('Password must be at least 8 characters.', 'error'); 
-            return; 
-        }
+        if (password.length < 8) { showMessage('Password must be at least 8 characters.', 'error'); return; }
         const btn = signupForm.querySelector('.btn-primary');
         const btnText = btn.querySelector('.btn-text');
         const btnLoader = btn.querySelector('.btn-loader');
@@ -236,39 +171,49 @@ function initEventListeners() {
             const btn = contactForm.querySelector('.btn-primary');
             const btnText = btn.querySelector('.btn-text');
             const btnLoader = btn.querySelector('.btn-loader');
-            
             const name = document.getElementById('contactName').value;
             const email = document.getElementById('contactEmail').value;
             const subject = document.getElementById('contactSubject').value;
             const message_text = document.getElementById('contactMessage').value;
-
-            btn.disabled = true;
-            btnText.style.opacity = '0';
-            btnLoader.style.display = 'inline-block';
-
+            btn.disabled = true; btnText.style.opacity = '0'; btnLoader.style.display = 'inline-block';
             try {
-                const mailtoLink = `mailto:bharathummadi4@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-                    `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message_text}`
-                )}`;
-                window.location.href = mailtoLink;
+                window.location.href = `mailto:bharathummadi4@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message_text}`)}`;
                 showMessage('Opening your email client...', 'success');
                 contactForm.reset();
-            } catch (error) {
-                showMessage('Error opening email client. Please email directly: bharathummadi4@gmail.com', 'error');
-            } finally {
-                btn.disabled = false;
-                btnText.style.opacity = '1';
-                btnLoader.style.display = 'none';
-            }
+            } catch { showMessage('Error opening email client.', 'error'); }
+            finally { btn.disabled = false; btnText.style.opacity = '1'; btnLoader.style.display = 'none'; }
         });
     }
 
-    if (mobileMenu) {
-        mobileMenu.addEventListener('click', toggleMobileMenu);
-    }
+    if (mobileMenu) mobileMenu.addEventListener('click', toggleMobileMenu);
 }
 
-// ─── Dashboard ───────────────────────────────────────────────
+// ─── Shared helper: fetch progress for a list of courses ─────
+async function fetchProgressMap(courses) {
+    const progressMap = {};
+    await Promise.all(courses.map(async (course) => {
+        try {
+            const [topicsRes, progressRes] = await Promise.all([
+                apiCall('GET', `courses/${course.id}/topics`, token),
+                apiCall('GET', `progress/${course.id}`, token)
+            ]);
+            progressMap[course.id] = {
+                total: (topicsRes.topics || []).length,
+                completed: progressRes.completed_topic_ids || []
+            };
+        } catch {
+            progressMap[course.id] = { total: 0, completed: [] };
+        }
+    }));
+    return progressMap;
+}
+
+function calcPercent(progressMap, courseId) {
+    const { completed, total } = progressMap[courseId] || { completed: [], total: 0 };
+    return total > 0 ? Math.round((completed.length / total) * 100) : 0;
+}
+
+// ─── Dashboard ────────────────────────────────────────────────
 async function loadDashboard() {
     if (!token) return;
     try {
@@ -277,68 +222,40 @@ async function loadDashboard() {
         document.getElementById('dashboardUserEmail').textContent = currentUser;
         document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser}! 👋`;
 
-        const [coursesRes, myCoursesRes] = await Promise.all([
+        const [coursesRes, myCoursesRes, streakRes] = await Promise.all([
             apiCall('GET', 'courses', token),
-            apiCall('GET', 'my-courses', token)
+            apiCall('GET', 'my-courses', token),
+            apiCall('POST', 'streak', token)   // ✅ Real streak from DB
         ]);
-        
+
         const courses = Array.isArray(coursesRes) ? coursesRes : [];
         const myCourses = Array.isArray(myCoursesRes) ? myCoursesRes : [];
-        
+
         document.getElementById('totalCourses').textContent = courses.length;
         document.getElementById('myCoursesCount').textContent = myCourses.length;
+        document.getElementById('learningStreak').textContent = streakRes.streak || 0;
 
-        // ✅ FIX: Fetch topics for each enrolled course to get accurate counts
-        // then compute completed topics correctly
-        let totalTopicsCompleted = 0;
+        // ✅ Progress from DB — works on any device
+        const progressMap = await fetchProgressMap(myCourses);
+        const totalCompleted = myCourses.reduce((sum, c) => {
+            return sum + (progressMap[c.id]?.completed?.length || 0);
+        }, 0);
+        document.getElementById('topicsCompleted').textContent = totalCompleted;
 
-        await Promise.all(myCourses.map(async (course) => {
-            try {
-                // Only fetch if we don't have the topic count cached
-                if (!localStorage.getItem(`topiccount_${course.id}`)) {
-                    const data = await apiCall('GET', `courses/${course.id}/topics`, token);
-                    const topics = data.topics || [];
-                    localStorage.setItem(`topiccount_${course.id}`, topics.length);
-                }
-            } catch (e) {
-                // silently ignore per-course fetch errors
-            }
-            const completed = getCompletedTopics(course.id);
-            totalTopicsCompleted += completed.length;
-        }));
-
-        document.getElementById('topicsCompleted').textContent = totalTopicsCompleted;
-        
-        // Learning streak
-        const lastLogin = localStorage.getItem('lastLogin');
-        const today = new Date().toDateString();
-        let streak = parseInt(localStorage.getItem('learningStreak')) || 0;
-        
-        if (lastLogin !== today) {
-            streak += 1;
-            localStorage.setItem('lastLogin', today);
-            localStorage.setItem('learningStreak', streak);
-        }
-        document.getElementById('learningStreak').textContent = streak;
-        
-        // ✅ FIX: Pass myCourses AFTER topic counts are populated
-        loadDashboardProgress(myCourses);
+        loadDashboardProgress(myCourses, progressMap);
         loadDashboardFeatured(courses, myCourses);
-        
+
     } catch (err) { console.error(err); }
 }
 
-function loadDashboardProgress(myCourses) {
+function loadDashboardProgress(myCourses, progressMap) {
     const container = document.getElementById('dashboardProgressContainer');
-    
     if (!myCourses || myCourses.length === 0) {
         container.innerHTML = '<p class="loading-text">Enroll in courses to track progress</p>';
         return;
     }
-    
     container.innerHTML = myCourses.map(course => {
-        // ✅ FIX: getProgress now works because topiccount is guaranteed to be set above
-        const progress = getProgress(course.id);
+        const progress = calcPercent(progressMap, course.id);
         return `
             <div class="progress-item">
                 <p class="progress-item-name" title="${course.title}">${escapeHtml(course.title)}</p>
@@ -346,8 +263,7 @@ function loadDashboardProgress(myCourses) {
                     <div class="progress-item-fill" style="width: ${progress}%"></div>
                 </div>
                 <p class="progress-item-percent">${progress}%</p>
-            </div>
-        `;
+            </div>`;
     }).join('');
 }
 
@@ -355,12 +271,10 @@ function loadDashboardFeatured(allCourses, enrolledCourses) {
     const container = document.getElementById('dashboardFeatured');
     const enrolledIds = enrolledCourses.map(c => c.id);
     const featured = allCourses.filter(c => !enrolledIds.includes(c.id)).slice(0, 3);
-    
     if (featured.length === 0) {
         container.innerHTML = '<p class="loading-text">All courses explored! Good job!</p>';
         return;
     }
-    
     container.innerHTML = featured.map(course => `
         <div class="featured-card">
             <p class="featured-card-title">${escapeHtml(course.title)}</p>
@@ -371,35 +285,10 @@ function loadDashboardFeatured(allCourses, enrolledCourses) {
             <button onclick="enrollCourse(${course.id}, this)">
                 <i class="fas fa-plus-circle"></i> Enroll Now
             </button>
-        </div>
-    `).join('');
+        </div>`).join('');
 }
 
-// ─── Enrollment Logic ────────────────────────────────────────
-function getEnrollmentStatus(enrolledCourses) {
-    if (!enrolledCourses || enrolledCourses.length === 0) {
-        return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
-    }
-
-    const activeCourse = enrolledCourses.find(course => {
-        const progress = getProgress(course.id);
-        return progress < 70;
-    });
-
-    if (activeCourse) {
-        const progress = getProgress(activeCourse.id);
-        return {
-            canEnrollNew: false,
-            activeCourseId: activeCourse.id,
-            activeCourseName: activeCourse.title,
-            activeProgress: progress
-        };
-    }
-
-    return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
-}
-
-// ─── All Courses ─────────────────────────────────────────────
+// ─── All Courses ──────────────────────────────────────────────
 async function loadCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('coursesGrid');
@@ -415,25 +304,17 @@ async function loadCourses() {
             return;
         }
 
-        const enrolledIds = Array.isArray(myCourses) ? myCourses.map(c => c.id) : [];
+        const enrolledList = Array.isArray(myCourses) ? myCourses : [];
+        const enrolledIds = enrolledList.map(c => c.id);
+        const progressMap = await fetchProgressMap(enrolledList);
 
-        // ✅ FIX: Ensure topic counts are cached before computing enrollment status
-        await Promise.all((Array.isArray(myCourses) ? myCourses : []).map(async (course) => {
-            if (!localStorage.getItem(`topiccount_${course.id}`)) {
-                try {
-                    const data = await apiCall('GET', `courses/${course.id}/topics`, token);
-                    const topics = data.topics || [];
-                    localStorage.setItem(`topiccount_${course.id}`, topics.length);
-                } catch (e) {}
-            }
-        }));
-
-        const status = getEnrollmentStatus(Array.isArray(myCourses) ? myCourses : []);
+        const activeCourse = enrolledList.find(c => calcPercent(progressMap, c.id) < 70);
+        const canEnrollNew = !activeCourse;
 
         const hint = document.getElementById('enrollHint');
         if (hint) {
-            if (!status.canEnrollNew && status.activeCourseId) {
-                hint.textContent = `Complete 70% of "${status.activeCourseName}" (${status.activeProgress}% done) to unlock next enrollment`;
+            if (activeCourse) {
+                hint.textContent = `Complete 70% of "${activeCourse.title}" (${calcPercent(progressMap, activeCourse.id)}% done) to unlock next enrollment`;
             } else if (enrolledIds.length === 0) {
                 hint.textContent = 'Enroll in your first course to get started!';
             } else {
@@ -443,36 +324,27 @@ async function loadCourses() {
 
         grid.innerHTML = courses.map(course => {
             const enrolled = enrolledIds.includes(course.id);
-            const progress = getProgress(course.id);
-            const canEnroll = enrolled || status.canEnrollNew;
+            const progress = calcPercent(progressMap, course.id);
 
-            if (enrolled) {
-                return `
+            if (enrolled) return `
                 <div class="course-card enrolled-card">
                     <div class="card-ribbon">Enrolled</div>
                     <div class="course-icon-wrap"><i class="fas fa-book-open"></i></div>
                     <h3>${escapeHtml(course.title)}</h3>
                     <div class="progress-inline">
-                        <div class="progress-inline-bar">
-                            <div class="progress-inline-fill" style="width:${progress}%"></div>
-                        </div>
+                        <div class="progress-inline-bar"><div class="progress-inline-fill" style="width:${progress}%"></div></div>
                         <span>${progress}%</span>
                     </div>
                     <button disabled>✓ Already Enrolled</button>
                 </div>`;
-            }
 
-            if (!canEnroll) {
-                return `
+            if (!canEnrollNew) return `
                 <div class="course-card locked-card">
                     <div class="card-ribbon locked-ribbon"><i class="fas fa-lock"></i> Locked</div>
                     <div class="course-icon-wrap locked-icon"><i class="fas fa-lock"></i></div>
                     <h3>${escapeHtml(course.title)}</h3>
-                    <div class="lock-notice">
-                        Complete 70% of <strong>"${escapeHtml(status.activeCourseName)}"</strong> to unlock
-                    </div>
+                    <div class="lock-notice">Complete 70% of <strong>"${escapeHtml(activeCourse.title)}"</strong> to unlock</div>
                 </div>`;
-            }
 
             return `
             <div class="course-card available-card">
@@ -505,7 +377,7 @@ async function enrollCourse(courseId, btn) {
     }
 }
 
-// ─── My Courses ──────────────────────────────────────────────
+// ─── My Courses ───────────────────────────────────────────────
 async function loadMyCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('myCoursesGrid');
@@ -513,28 +385,14 @@ async function loadMyCourses() {
     try {
         const courses = await apiCall('GET', 'my-courses', token);
         if (!Array.isArray(courses) || courses.length === 0) {
-            grid.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-graduation-cap"></i>
-                    <p>No enrolled courses yet.</p>
-                    <a href="#" onclick="showCourses()" class="empty-cta">Browse Courses →</a>
-                </div>`;
+            grid.innerHTML = `<div class="empty-state"><i class="fas fa-graduation-cap"></i><p>No enrolled courses yet.</p><a href="#" onclick="showCourses()" class="empty-cta">Browse Courses →</a></div>`;
             return;
         }
 
-        // ✅ FIX: Ensure topic counts are cached before rendering progress rings
-        await Promise.all(courses.map(async (course) => {
-            if (!localStorage.getItem(`topiccount_${course.id}`)) {
-                try {
-                    const data = await apiCall('GET', `courses/${course.id}/topics`, token);
-                    const topics = data.topics || [];
-                    localStorage.setItem(`topiccount_${course.id}`, topics.length);
-                } catch (e) {}
-            }
-        }));
+        const progressMap = await fetchProgressMap(courses);
 
         grid.innerHTML = courses.map(course => {
-            const progress = getProgress(course.id);
+            const progress = calcPercent(progressMap, course.id);
             return `
             <div class="course-card my-course-card" onclick="showCourseTopics(${course.id}, '${course.title.replace(/'/g, "\\'")}')">
                 <div class="course-icon-wrap"><i class="fas fa-play-circle"></i></div>
@@ -548,13 +406,12 @@ async function loadMyCourses() {
                             stroke-width="5"
                             stroke-dasharray="${2 * Math.PI * 24}"
                             stroke-dashoffset="${2 * Math.PI * 24 * (1 - progress / 100)}"
-                            stroke-linecap="round"
-                            transform="rotate(-90 30 30)"/>
+                            stroke-linecap="round" transform="rotate(-90 30 30)"/>
                         <text x="30" y="35" text-anchor="middle" font-size="11" font-weight="700"
                             fill="${progress >= 70 ? '#27ae60' : progress >= 40 ? '#f39c12' : '#667eea'}">${progress}%</text>
                     </svg>
                 </div>
-                <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.85rem;"><i class="fas fa-mouse-pointer"></i> Click to view topics</p>
+                <p style="margin-top:8px;color:var(--text-muted);font-size:0.85rem;"><i class="fas fa-mouse-pointer"></i> Click to view topics</p>
             </div>`;
         }).join('');
     } catch {
@@ -562,98 +419,62 @@ async function loadMyCourses() {
     }
 }
 
-// ─── Progress Helpers ────────────────────────────────────────
-function getProgressKey(courseId) { return `progress_${currentUser}_${courseId}`; }
-
-function getCompletedTopics(courseId) {
-    const stored = localStorage.getItem(getProgressKey(courseId));
-    return stored ? JSON.parse(stored) : [];
-}
-
-function getProgress(courseId) {
-    const completed = getCompletedTopics(courseId);
-    const total = parseInt(localStorage.getItem(`topiccount_${courseId}`) || '0');
-    if (!total) return 0;
-    return Math.round((completed.length / total) * 100);
-}
-
-function updateProgressUI(courseId, completedCount, totalCount) {
-    const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-    const fill = document.getElementById('progressFill');
-    const text = document.getElementById('progressText');
-    if (fill) {
-        fill.style.width = `${percent}%`;
-        fill.className = 'progress-bar-fill ' + (percent >= 70 ? 'fill-green' : percent >= 40 ? 'fill-orange' : 'fill-blue');
-    }
-    if (text) {
-        text.innerHTML = `${percent}% Complete (${completedCount}/${totalCount} topics)`;
-        if (percent >= 70) {
-            text.innerHTML += ' 🔓 You can enroll in another course!';
-        }
-    }
-}
-
-// ─── Topics ──────────────────────────────────────────────────
-function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
+// ─── Topics ───────────────────────────────────────────────────
+async function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
     checkbox.checked = true;
-
-    const completed = getCompletedTopics(courseId);
-    if (completed.includes(topicId)) return;
-
-    completed.push(topicId);
-    localStorage.setItem(getProgressKey(courseId), JSON.stringify(completed));
-
-    // ✅ FIX: Always keep topiccount in sync when marking complete
-    localStorage.setItem(`topiccount_${courseId}`, totalTopics);
+    checkbox.disabled = true;
+    try {
+        await apiCall('POST', `progress/${topicId}`, token); // ✅ Save to DB
+    } catch (e) { /* already marked or error — ignore */ }
 
     const card = document.getElementById(`topic-card-${topicId}`);
     if (card) {
         card.classList.add('completed');
         const statusEl = card.querySelector('.topic-status');
         const numEl = card.querySelector('.topic-number');
+        const checkmark = card.querySelector('.checkmark');
         if (statusEl) statusEl.textContent = 'Done ✓';
         if (numEl) numEl.innerHTML = '<i class="fas fa-check"></i>';
+        if (checkmark) checkmark.classList.add('locked');
     }
 
-    updateProgressUI(courseId, completed.length, totalTopics);
-    showMotivationToast(getRandomMotivation());
-
-    const percent = Math.round((completed.length / totalTopics) * 100);
-    const prevPercent = Math.round(((completed.length - 1) / totalTopics) * 100);
-    if (percent >= 70 && prevPercent < 70) {
-        setTimeout(() => {
-            showMotivationToast('🎊 You\'ve hit 70%! You can now enroll in another course!');
-        }, 4500);
-    }
+    try {
+        const progressRes = await apiCall('GET', `progress/${courseId}`, token);
+        const completedCount = (progressRes.completed_topic_ids || []).length;
+        updateProgressUI(courseId, completedCount, totalTopics);
+        showMotivationToast(getRandomMotivation());
+        const percent = Math.round((completedCount / totalTopics) * 100);
+        const prevPercent = Math.round(((completedCount - 1) / totalTopics) * 100);
+        if (percent >= 70 && prevPercent < 70) {
+            setTimeout(() => showMotivationToast('🎊 You\'ve hit 70%! You can now enroll in another course!'), 4500);
+        }
+    } catch (e) {}
 }
 
 async function loadTopics(courseId) {
     const list = document.getElementById('topicsList');
     list.innerHTML = '<p class="loading-text">Loading topics...</p>';
     try {
-        const data = await apiCall('GET', `courses/${courseId}/topics`, token);
-        const topics = data.topics || [];
+        // ✅ Fetch topics + completed IDs from DB together
+        const [topicsData, progressData] = await Promise.all([
+            apiCall('GET', `courses/${courseId}/topics`, token),
+            apiCall('GET', `progress/${courseId}`, token)
+        ]);
 
-        // ✅ FIX: Always update topiccount when topics are loaded
-        localStorage.setItem(`topiccount_${courseId}`, topics.length);
+        const topics = topicsData.topics || [];
+        const completedIds = progressData.completed_topic_ids || [];
 
-        const completed = getCompletedTopics(courseId);
-        updateProgressUI(courseId, completed.length, topics.length);
+        updateProgressUI(courseId, completedIds.length, topics.length);
 
         if (topics.length === 0) {
-            list.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>No topics added yet for this course.</p>
-                </div>`;
+            list.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>No topics added yet for this course.</p></div>`;
             return;
         }
 
         list.innerHTML = topics.map((topic, index) => {
-            const isDone = completed.includes(topic.id);
+            const isDone = completedIds.includes(topic.id);
             const youtubeId = extractYoutubeId(topic.link);
             const thumbnail = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null;
-
             return `
             <div class="topic-card ${isDone ? 'completed' : ''}" id="topic-card-${topic.id}">
                 <div class="topic-left">
@@ -672,9 +493,7 @@ async function loadTopics(courseId) {
                 </div>
                 <div class="topic-right">
                     <label class="checkbox-container" title="${isDone ? 'Completed' : 'Mark as complete'}">
-                        <input type="checkbox"
-                            ${isDone ? 'checked' : ''}
-                            onchange="markTopicComplete(${courseId}, ${topic.id}, ${topics.length}, this)">
+                        <input type="checkbox" ${isDone ? 'checked disabled' : `onchange="markTopicComplete(${courseId}, ${topic.id}, ${topics.length}, this)"`}>
                         <span class="checkmark ${isDone ? 'locked' : ''}"></span>
                     </label>
                     <span class="topic-status">${isDone ? 'Done ✓' : 'Pending'}</span>
@@ -692,7 +511,21 @@ function extractYoutubeId(url) {
     return match ? match[1] : null;
 }
 
-// ─── Profile ─────────────────────────────────────────────────
+function updateProgressUI(courseId, completedCount, totalCount) {
+    const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    const fill = document.getElementById('progressFill');
+    const text = document.getElementById('progressText');
+    if (fill) {
+        fill.style.width = `${percent}%`;
+        fill.className = 'progress-bar-fill ' + (percent >= 70 ? 'fill-green' : percent >= 40 ? 'fill-orange' : 'fill-blue');
+    }
+    if (text) {
+        text.innerHTML = `${percent}% Complete (${completedCount}/${totalCount} topics)`;
+        if (percent >= 70) text.innerHTML += ' 🔓 You can enroll in another course!';
+    }
+}
+
+// ─── Profile ──────────────────────────────────────────────────
 async function loadProfile() {
     if (!token || !currentUser) return showLogin();
     try {
@@ -713,19 +546,9 @@ async function deleteAccount() {
 }
 
 function logout() {
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('progress_') || key.startsWith('topiccount_'))) {
-            keysToRemove.push(key);
-        }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    
     currentUser = null;
     token = null;
     localStorage.removeItem('token');
-    
     showLogin();
 }
 
