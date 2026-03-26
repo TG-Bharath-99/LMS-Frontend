@@ -188,7 +188,6 @@ function initEventListeners() {
     if (mobileMenu) mobileMenu.addEventListener('click', toggleMobileMenu);
 }
 
-// ─── Shared helper: fetch progress for a list of courses ─────
 async function fetchProgressMap(courses) {
     const progressMap = {};
     await Promise.all(courses.map(async (course) => {
@@ -213,20 +212,20 @@ function calcPercent(progressMap, courseId) {
     return total > 0 ? Math.round((completed.length / total) * 100) : 0;
 }
 
-// ─── Dashboard ────────────────────────────────────────────────
 async function loadDashboard() {
     if (!token) return;
     try {
-        const firstName = currentUser.split('@')[0].charAt(0).toUpperCase();
-        document.getElementById('dashboardAvatar').textContent = firstName;
-        document.getElementById('dashboardUserEmail').textContent = currentUser;
-        document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUser}! 👋`;
-
-        const [coursesRes, myCoursesRes, streakRes] = await Promise.all([
+        const [coursesRes, myCoursesRes, streakRes, profileRes] = await Promise.all([
             apiCall('GET', 'courses', token),
             apiCall('GET', 'my-courses', token),
-            apiCall('POST', 'streak', token)   // ✅ Real streak from DB
+            apiCall('POST', 'streak', token),
+            apiCall('GET', `users/${encodeURIComponent(currentUser)}`, token)
         ]);
+
+        const displayName = profileRes?.name || currentUser.split('@')[0];
+        document.getElementById('dashboardAvatar').textContent = displayName.charAt(0).toUpperCase();
+        document.getElementById('dashboardUserEmail').textContent = currentUser;
+        document.getElementById('welcomeMessage').textContent = `Welcome back, ${displayName}! 👋`;
 
         const courses = Array.isArray(coursesRes) ? coursesRes : [];
         const myCourses = Array.isArray(myCoursesRes) ? myCoursesRes : [];
@@ -235,7 +234,6 @@ async function loadDashboard() {
         document.getElementById('myCoursesCount').textContent = myCourses.length;
         document.getElementById('learningStreak').textContent = streakRes.streak || 0;
 
-        // ✅ Progress from DB — works on any device
         const progressMap = await fetchProgressMap(myCourses);
         const totalCompleted = myCourses.reduce((sum, c) => {
             return sum + (progressMap[c.id]?.completed?.length || 0);
@@ -288,7 +286,6 @@ function loadDashboardFeatured(allCourses, enrolledCourses) {
         </div>`).join('');
 }
 
-// ─── All Courses ──────────────────────────────────────────────
 async function loadCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('coursesGrid');
@@ -377,7 +374,6 @@ async function enrollCourse(courseId, btn) {
     }
 }
 
-// ─── My Courses ───────────────────────────────────────────────
 async function loadMyCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('myCoursesGrid');
@@ -419,13 +415,12 @@ async function loadMyCourses() {
     }
 }
 
-// ─── Topics ───────────────────────────────────────────────────
 async function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
     checkbox.checked = true;
     checkbox.disabled = true;
     try {
-        await apiCall('POST', `progress/${topicId}`, token); // ✅ Save to DB
-    } catch (e) { /* already marked or error — ignore */ }
+        await apiCall('POST', `progress/${topicId}`, token); 
+    } catch (e) {  }
 
     const card = document.getElementById(`topic-card-${topicId}`);
     if (card) {
@@ -455,7 +450,6 @@ async function loadTopics(courseId) {
     const list = document.getElementById('topicsList');
     list.innerHTML = '<p class="loading-text">Loading topics...</p>';
     try {
-        // ✅ Fetch topics + completed IDs from DB together
         const [topicsData, progressData] = await Promise.all([
             apiCall('GET', `courses/${courseId}/topics`, token),
             apiCall('GET', `progress/${courseId}`, token)
@@ -525,7 +519,6 @@ function updateProgressUI(courseId, completedCount, totalCount) {
     }
 }
 
-// ─── Profile ──────────────────────────────────────────────────
 async function loadProfile() {
     if (!token || !currentUser) return showLogin();
     try {

@@ -55,7 +55,6 @@ body::before {
     z-index: 1;
 }
 
-/* ─── Motivation Toast ──────────────────────────────────────── */
 .motivation-toast {
     position: fixed;
     top: 90px;
@@ -83,7 +82,6 @@ body::before {
     50% { transform: translateY(-6px); }
 }
 
-/* ─── Navbar ──────────────────────────────────────────────── */
 .navbar {
     background: rgba(15,12,41,0.85);
     backdrop-filter: blur(20px);
@@ -153,7 +151,6 @@ body::before {
 .nav-toggle { display: none; flex-direction: column; background: none; border: none; cursor: pointer; gap: 5px; }
 .bar { width: 24px; height: 2.5px; background: var(--white); border-radius: 2px; transition: 0.3s; }
 
-/* ─── Auth ────────────────────────────────────────────────── */
 #auth-container {
     display: flex;
     justify-content: center;
@@ -257,7 +254,6 @@ body::before {
 .auth-switch a { color: var(--primary); text-decoration: none; font-weight: 700; }
 .auth-switch a:hover { text-decoration: underline; }
 
-/* ─── Pages ───────────────────────────────────────────────── */
 .page-content { animation: fadeUp 0.45s ease-out; padding-top: 10px; }
 
 @keyframes fadeUp {
@@ -288,7 +284,6 @@ body::before {
     margin-top: 12px;
 }
 
-/* ─── DASHBOARD UI ────────────────────────────────────────── */
 .dashboard-wrapper {
     display: flex;
     flex-direction: column;
@@ -450,7 +445,6 @@ body::before {
     z-index: 1;
 }
 
-/* ─── Progress Section ────────────────────────────────────── */
 .dashboard-progress {
     background: var(--card-bg);
     backdrop-filter: blur(20px);
@@ -521,7 +515,6 @@ body::before {
     font-weight: 600;
 }
 
-/* ─── Quick Actions ──────────────────────────────────────── */
 .dashboard-actions {
     margin-bottom: 20px;
 }
@@ -602,7 +595,6 @@ body::before {
 .btn-about i { color: var(--warning); }
 .btn-contact i { color: var(--secondary); }
 
-/* ─── Featured Section ──────────────────────────────────────────── */
 .dashboard-featured {
     margin-top: 40px;
 }
@@ -665,7 +657,6 @@ body::before {
     transform: translateY(-2px);
 }
 
-/* ─── Back Button ─────────────────────────────────────────── */
 .back-btn {
     display: inline-flex; align-items: center; gap: 8px;
     background: rgba(255,255,255,0.07);
@@ -677,7 +668,6 @@ body::before {
 }
 .back-btn:hover { background: rgba(255,255,255,0.13); transform: translateX(-4px); }
 
-/* ─── Progress Bar ────────────────────────────────────────── */
 .progress-bar-container { margin: 18px auto 0; max-width: 520px; }
 .progress-bar-track {
     background: rgba(255,255,255,0.1);
@@ -707,7 +697,6 @@ body::before {
 
 .progress-text { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
 
-/* ─── Courses Grid ────────────────────────────────────────── */
 .courses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -859,7 +848,6 @@ body::before {
 .progress-ring-wrap { display: flex; justify-content: center; margin: 14px 0 8px; }
 .progress-ring { width: 70px; height: 70px; }
 
-/* ─── Topics ──────────────────────────────────────────────── */
 .topics-list { display: flex; flex-direction: column; gap: 14px; max-width: 880px; margin: 0 auto; }
 
 .topic-card {
@@ -941,7 +929,6 @@ body::before {
 .topic-status { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .topic-card.completed .topic-status { color: var(--success); }
 
-/* ─── About Page ──────────────────────────────────────────── */
 .about-container {
     max-width: 800px;
     margin: 0 auto;
@@ -1020,7 +1007,6 @@ body::before {
     color: var(--white);
 }
 
-/* ─── Contact Page ────────────────────────────────────────── */
 .contact-container {
     max-width: 800px;
     margin: 0 auto;
@@ -1097,7 +1083,6 @@ body::before {
     text-decoration: underline;
 }
 
-/* ─── Profile ─────────────────────────────────────────────── */
 .profile-container { max-width: 580px; margin: 0 auto; }
 
 .profile-card {
@@ -1142,7 +1127,6 @@ body::before {
 }
 .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,75,92,0.4); }
 
-/* ─── Messages & Loader ───────────────────────────────────── */
 .message {
     padding: 14px 22px; border-radius: 12px; margin: 16px auto;
     text-align: center; font-weight: 600; max-width: 500px;
@@ -1162,7 +1146,6 @@ body::before {
 
 .hidden { display: none !important; }
 
-/* ─── Mobile ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .nav-menu {
         position: fixed; left: -100%; top: 72px;
